@@ -32,9 +32,7 @@ CREATE TABLE IF NOT EXISTS `aposta` (
   CONSTRAINT `aposta_ibfk_1` FOREIGN KEY (`id_partida`) REFERENCES `partida` (`id_partida`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela cassinoonline.aposta: ~1 rows (aproximadamente)
-INSERT INTO `aposta` (`id_aposta`, `valor`, `resultado`, `id_partida`) VALUES
-	(1, 20.00, 'x2', 1);
+-- Copiando dados para a tabela cassinoonline.aposta: ~0 rows (aproximadamente)
 
 -- Copiando estrutura para tabela cassinoonline.bonus
 DROP TABLE IF EXISTS `bonus`;
@@ -48,10 +46,7 @@ CREATE TABLE IF NOT EXISTS `bonus` (
   CONSTRAINT `bonus_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela cassinoonline.bonus: ~2 rows (aproximadamente)
-INSERT INTO `bonus` (`id_bonus`, `valor`, `tipo`, `id_usuario`) VALUES
-	(1, 0.10, 'double win', 8),
-	(2, 0.10, 'double win', 8);
+-- Copiando dados para a tabela cassinoonline.bonus: ~0 rows (aproximadamente)
 
 -- Copiando estrutura para tabela cassinoonline.carteira
 DROP TABLE IF EXISTS `carteira`;
@@ -62,9 +57,11 @@ CREATE TABLE IF NOT EXISTS `carteira` (
   PRIMARY KEY (`id_carteira`),
   KEY `id_usuario` (`id_usuario`),
   CONSTRAINT `carteira_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela cassinoonline.carteira: ~0 rows (aproximadamente)
+-- Copiando dados para a tabela cassinoonline.carteira: ~1 rows (aproximadamente)
+INSERT INTO `carteira` (`id_carteira`, `saldo`, `id_usuario`) VALUES
+	(4, 1001.00, 2);
 
 -- Copiando estrutura para tabela cassinoonline.conquista
 DROP TABLE IF EXISTS `conquista`;
@@ -74,11 +71,16 @@ CREATE TABLE IF NOT EXISTS `conquista` (
   `descricao` text DEFAULT NULL,
   `recompensa` double DEFAULT NULL,
   PRIMARY KEY (`id_conquista`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela cassinoonline.conquista: ~0 rows (aproximadamente)
+-- Copiando dados para a tabela cassinoonline.conquista: ~6 rows (aproximadamente)
 INSERT INTO `conquista` (`id_conquista`, `nome`, `descricao`, `recompensa`) VALUES
-	(4, 'PockerKing', 'ganhe', 45000.23);
+	(4, 'PockerKing', 'ganhe 50 vezes no pocker', 0.9),
+	(5, 'Ligeiro', 'roube', 0.5),
+	(6, 'Pé Quente', 'realize sua primeira aposta', 0.1),
+	(7, 'Mestre dos Giros', 'Completar 100 rodadas em um slot', 0.7),
+	(8, 'Guerreiro de Fim de Semana', 'realizar pelo menos 1 jogada na sexta no sabado e domingo', 0.3),
+	(9, 'Veterano da Casa', 'completar 2 meses de conta', 0.6);
 
 -- Copiando estrutura para tabela cassinoonline.deposito
 DROP TABLE IF EXISTS `deposito`;
@@ -90,9 +92,12 @@ CREATE TABLE IF NOT EXISTS `deposito` (
   PRIMARY KEY (`id_deposito`),
   KEY `id_usuario` (`id_usuario`),
   CONSTRAINT `deposito_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela cassinoonline.deposito: ~0 rows (aproximadamente)
+-- Copiando dados para a tabela cassinoonline.deposito: ~2 rows (aproximadamente)
+INSERT INTO `deposito` (`id_deposito`, `data`, `valor_total`, `id_usuario`) VALUES
+	(5, '2026-10-11 00:00:00', 1.00, 2),
+	(6, '2026-10-11 00:00:00', 1000.00, 2);
 
 -- Copiando estrutura para tabela cassinoonline.jogo
 DROP TABLE IF EXISTS `jogo`;
@@ -125,9 +130,7 @@ CREATE TABLE IF NOT EXISTS `partida` (
   CONSTRAINT `partida_ibfk_2` FOREIGN KEY (`id_jogo`) REFERENCES `jogo` (`id_jogo`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela cassinoonline.partida: ~1 rows (aproximadamente)
-INSERT INTO `partida` (`id_partida`, `data`, `resultado`, `id_usuario`, `id_jogo`) VALUES
-	(1, '2026-05-31 00:00:00', 'Win', 8, 2);
+-- Copiando dados para a tabela cassinoonline.partida: ~0 rows (aproximadamente)
 
 -- Copiando estrutura para tabela cassinoonline.saque
 DROP TABLE IF EXISTS `saque`;
@@ -139,11 +142,27 @@ CREATE TABLE IF NOT EXISTS `saque` (
   PRIMARY KEY (`id_saque`),
   KEY `id_usuario` (`id_usuario`),
   CONSTRAINT `saque_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Copiando dados para a tabela cassinoonline.saque: ~0 rows (aproximadamente)
-INSERT INTO `saque` (`id_saque`, `data`, `valor_total`, `id_usuario`) VALUES
-	(2, '2026-06-08 00:00:00', 25.00, 8);
+
+-- Copiando estrutura para tabela cassinoonline.token_recuperacao
+DROP TABLE IF EXISTS `token_recuperacao`;
+CREATE TABLE IF NOT EXISTS `token_recuperacao` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email_usuario` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `data_expiracao` datetime NOT NULL,
+  `usado` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Copiando dados para a tabela cassinoonline.token_recuperacao: ~4 rows (aproximadamente)
+INSERT INTO `token_recuperacao` (`id`, `email_usuario`, `token`, `data_expiracao`, `usado`) VALUES
+	(1, 'iago.sepini@alunos.ifsuldeminas.edu.br', '149249ac-8d87-4226-a32c-bc5903b39f26', '2026-10-11 19:23:53', 0),
+	(2, 'iago.sepini@alunos.ifsuldeminas.edu.br', '3add8f4c-0c0a-4899-bfd6-9aac1d474172', '2026-10-11 19:27:18', 0),
+	(3, 'iago.sepini@alunos.ifsuldeminas.edu.br', '79d093e4-17fc-4922-bb89-048ce07e2395', '2026-10-11 19:29:23', 0),
+	(4, 'iago.sepini@alunos.ifsuldeminas.edu.br', '1f9daf8e-25f7-4d06-84a8-ce298e569448', '2026-10-11 19:34:21', 1);
 
 -- Copiando estrutura para tabela cassinoonline.transacao
 DROP TABLE IF EXISTS `transacao`;
@@ -156,11 +175,12 @@ CREATE TABLE IF NOT EXISTS `transacao` (
   PRIMARY KEY (`id_transacao`),
   KEY `id_usuario` (`id_usuario`),
   CONSTRAINT `transacao_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela cassinoonline.transacao: ~0 rows (aproximadamente)
+-- Copiando dados para a tabela cassinoonline.transacao: ~2 rows (aproximadamente)
 INSERT INTO `transacao` (`id_transacao`, `valor`, `tipo`, `data`, `id_usuario`) VALUES
-	(2, 234.00, 'pix2', '2026-06-08 00:00:00', 8);
+	(11, 1.00, 'DEPOSITO', '2026-10-11 00:00:00', 2),
+	(12, 1000.00, 'DEPOSITO', '2026-10-11 00:00:00', 2);
 
 -- Copiando estrutura para tabela cassinoonline.usuario
 DROP TABLE IF EXISTS `usuario`;
@@ -174,15 +194,12 @@ CREATE TABLE IF NOT EXISTS `usuario` (
   `cpf` varchar(50) NOT NULL,
   `data_nascimento` date NOT NULL,
   PRIMARY KEY (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela cassinoonline.usuario: ~5 rows (aproximadamente)
+-- Copiando dados para a tabela cassinoonline.usuario: ~2 rows (aproximadamente)
 INSERT INTO `usuario` (`id_usuario`, `nome`, `senha`, `email`, `data_cadastro`, `endereco`, `cpf`, `data_nascimento`) VALUES
-	(8, 'Iago', '1234', 'te@gmail.com', '2026-05-04', 'rty', '1357123', '2026-05-20'),
-	(10, 'as', '1234', 'asda@gmail.com', '2026-04-26', 're2', '000.000.000-05', '2026-05-18'),
-	(12, 'as', '1234', 'asda@gmail.com', '2026-04-26', 're2', '000.000.000-05', '2026-05-18'),
-	(13, 'as', '1234', 'asda@gmail.com', '2026-04-26', 're2', '000.000.000-05', '2026-05-18'),
-	(15, '22', '1234', 'wwe@gmail.com', '2026-04-26', 'rua machado', '000.000.000-04', '2026-06-09');
+	(1, 'Iago', '$2a$10$v4dnp8zFgjPEuac8X4f8c..1YbifoiuQZYJsoWZ7UhtNNeTJKbdHi', 'iago@gmail.com', '2026-10-11', 'rrrrr', '1357123', '2007-02-11'),
+	(2, 'Iago22', '$2a$10$h4F11N2pOstut22E.RJ6i.6bvSJodWoAHdlyVTD5w1aLvbQ7mSUqK', 'iago.sepini@alunos.ifsuldeminas.edu.br', '2026-10-11', 'rrrrrrrrr', '123456789', '2026-10-12');
 
 -- Copiando estrutura para tabela cassinoonline.usuario_conquista
 DROP TABLE IF EXISTS `usuario_conquista`;
@@ -200,7 +217,7 @@ CREATE TABLE IF NOT EXISTS `usuario_conquista` (
 
 -- Copiando dados para a tabela cassinoonline.usuario_conquista: ~1 rows (aproximadamente)
 INSERT INTO `usuario_conquista` (`id_usuarioConquista`, `data_conquista`, `id_usuario`, `id_conquista`) VALUES
-	(1, '2026-06-15', 12, 4);
+	(1, '2026-10-11', 2, 4);
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
