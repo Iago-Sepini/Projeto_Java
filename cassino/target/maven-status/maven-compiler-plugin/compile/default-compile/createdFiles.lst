@@ -12,6 +12,8 @@ br\edu\ifsuldeminas\infoh2026\modelo\dao\BonusDAO$BonusRowMapper.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\JogoDAO$JogoRowMapper.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\ConquistaDAO.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\PartidaDAO.class
+br\edu\ifsuldeminas\infoh2026\controlador\AreaJogadorControlador.class
+br\edu\ifsuldeminas\infoh2026\controlador\PerfilControlador.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\UsuarioConquistaDAO$UsuarioConquistaRowMapper.class
 br\edu\ifsuldeminas\infoh2026\servico\WebConstante.class
 br\edu\ifsuldeminas\infoh2026\controlador\UsuarioConquistaControlador.class
@@ -24,6 +26,7 @@ br\edu\ifsuldeminas\infoh2026\modelo\entidade\Transacao.class
 br\edu\ifsuldeminas\infoh2026\modelo\entidade\Deposito.class
 br\edu\ifsuldeminas\infoh2026\controlador\RankingControlador.class
 br\edu\ifsuldeminas\infoh2026\controlador\ConquistaControlador.class
+br\edu\ifsuldeminas\infoh2026\controlador\RecuperacaoControlador$1.class
 br\edu\ifsuldeminas\infoh2026\modelo\entidade\Saque.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\ConquistaDAO$ConquistaRowMapper.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\DepositoDAO.class
@@ -38,11 +41,14 @@ br\edu\ifsuldeminas\infoh2026\modelo\dao\TransacaoDAO.class
 br\edu\ifsuldeminas\infoh2026\controlador\SaqueControlador.class
 br\edu\ifsuldeminas\infoh2026\controlador\PartidaControlador.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\GenericoDAO.class
+br\edu\ifsuldeminas\infoh2026\seguranca\AuthFilter.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\UsuarioConquistaDAO.class
 br\edu\ifsuldeminas\infoh2026\modelo\entidade\Jogo.class
+br\edu\ifsuldeminas\infoh2026\controlador\RecuperacaoControlador.class
 br\edu\ifsuldeminas\infoh2026\controlador\BonusControlador.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\ApostaDAO.class
 br\edu\ifsuldeminas\infoh2026\servico\ConverteData.class
+br\edu\ifsuldeminas\infoh2026\seguranca\Secured.class
 br\edu\ifsuldeminas\infoh2026\controlador\DepositoControlador.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\TransacaoDAO$TransacaoRowMapper.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\CarteiraDAO$CarteiraRowMapper.class
@@ -52,4 +58,5 @@ br\edu\ifsuldeminas\infoh2026\modelo\dao\ConnectionFactory.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\SaqueDAO$SaqueRowMapper.class
 br\edu\ifsuldeminas\infoh2026\modelo\dao\ApostaDAO$ApostaRowMapper.class
 br\edu\ifsuldeminas\infoh2026\controlador\HomeControlador.class
+br\edu\ifsuldeminas\infoh2026\controlador\LoginControlador.class
 br\edu\ifsuldeminas\infoh2026\modelo\entidade\UsuarioConquista.class

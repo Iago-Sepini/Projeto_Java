@@ -1,176 +1,170 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package br.edu.ifsuldeminas.infoh2026.controlador;
 
-import br.edu.ifsuldeminas.infoh2026.servico.WebConstante;
-import br.edu.ifsuldeminas.infoh2026.modelo.dao.UsuarioDAO;
 import br.edu.ifsuldeminas.infoh2026.modelo.entidade.Usuario;
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
+import br.edu.ifsuldeminas.infoh2026.modelo.dao.UsuarioDAO; 
+import br.edu.ifsuldeminas.infoh2026.seguranca.Secured;
+
+import org.mindrot.jbcrypt.BCrypt; // Importação da biblioteca de Hash
+
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.sql.Date;
+import jakarta.servlet.http.HttpSession;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.util.List;
 
-/**
- *
- * @author 13410289682
- */
-@WebServlet(WebConstante.BASE_PATH + "/UsuarioControlador")
-public class UsuarioControlador extends HttpServlet {
+@Path("/usuarios")
+public class UsuarioControlador {
 
-    Usuario objUsuario = new Usuario();
-    UsuarioDAO objUsuarioDAO = new UsuarioDAO();
-    
-    String id_usuario = "";
-    String nome = "";
-    String senha = "";
-    String email = "";
-    String endereco = "";
-    String cpf = "";
-    String data_cadastro = "";
-    String dataNascimento = "";
-    String opcao = "";
+    private UsuarioDAO usuarioDAO = new UsuarioDAO();
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    // ==========================================
+    // 1. ENDPOINTS DE AUTENTICAÇÃO (SESSÃO)
+    // ==========================================
+
+    @POST
+    @Path("/login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response login(Usuario credenciais, @Context HttpServletRequest request) {
         try {
-            opcao = request.getParameter("opcao");
-            if (opcao == null || opcao.isEmpty()) {
-                opcao = "cadastrar";
-            }
+            // 1. Busca o usuário apenas pelo E-MAIL
+            Usuario user = usuarioDAO.buscarPorEmail(credenciais.getEmail());
             
-            id_usuario = request.getParameter("id_usuario");
-            nome = request.getParameter("nome");
-            senha = request.getParameter("senha");
-            email = request.getParameter("email");
-            endereco = request.getParameter("endereco");
-            cpf = request.getParameter("cpf");
-            data_cadastro = request.getParameter("data_cadastro");
-            dataNascimento = request.getParameter("dataNascimento");
-
-            switch (opcao) {
-                case "cadastrar":
-                    cadastrar(request, response);
-                    break;
-                case "enviarAlterar":
-                    enviarAlterar(request, response);
-                    break;
-                case "confirmarAlterar":
-                    confirmarAlterar(request, response);
-                    break;
-                case "cancelar":
-                    cancelar(request, response);
-                    break;
-                case "enviarExcluir":
-                    enviarExcluir(request, response);
-                    break;
-                case "confirmarExcluir":
-                    confirmarExcluir(request, response);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Opção inválida: " + opcao);
+            // 2. Se o usuário existir, compara a senha digitada com o Hash do banco usando BCrypt
+            if (user != null && BCrypt.checkpw(credenciais.getSenha(), user.getSenha())) {
+                
+                HttpSession session = request.getSession(true);
+                user.setSenha(null); // Limpa o hash da memória por segurança
+                session.setAttribute("usuarioLogado", user);
+                
+                return Response.ok("{\"mensagem\": \"Login realizado com sucesso!\"}").build();
+            } else {
+                return Response.status(Response.Status.UNAUTHORIZED)
+                               .entity("{\"erro\": \"E-mail ou senha inválidos.\"}").build();
             }
-
-        } catch (NumberFormatException e) {
-            response.getWriter().println("Erro: ID inválido - " + e.getMessage());
-        } catch (IllegalArgumentException ex) {
-            response.getWriter().println("Erro: " + ex.getMessage());
+        } catch (Exception e) {
+            return Response.serverError().entity("{\"erro\": \"Erro interno ao tentar logar.\"}").build();
         }
     }
 
-    private void cadastrar(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        objUsuario.setNome(nome);
-        objUsuario.setSenha(senha);
-        objUsuario.setEmail(email);
-        objUsuario.setEndereco(endereco);
-        objUsuario.setCpf(cpf);
-        
-        if (data_cadastro != null && !data_cadastro.isEmpty())
-            objUsuario.setData_cadastro(Date.valueOf(data_cadastro));
-        if (dataNascimento != null && !dataNascimento.isEmpty())
-            objUsuario.setDataNascimento(Date.valueOf(dataNascimento));
-
-        objUsuarioDAO.salvar(objUsuario);
-        request.setAttribute("mensagem", "Usuário cadastrado com sucesso!");
-        encaminharParaPagina(request, response);
+    @POST
+    @Path("/logout")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response logout(@Context HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        return Response.ok("{\"mensagem\": \"Logout realizado com sucesso!\"}").build();
     }
 
-    private void enviarAlterar(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setAttribute("id_usuario", id_usuario);
-        request.setAttribute("nome", nome);
-        request.setAttribute("senha", senha);
-        request.setAttribute("email", email);
-        request.setAttribute("endereco", endereco);
-        request.setAttribute("cpf", cpf);
-        request.setAttribute("data_cadastro", data_cadastro);
-        request.setAttribute("dataNascimento", dataNascimento);
-        
-        request.setAttribute("opcao", "confirmarAlterar");
-        request.setAttribute("mensagem", "Edite os dados do usuário");
-        encaminharParaPagina(request, response);
+
+    // ==========================================
+    // 2. ENDPOINTS CRUD
+    // ==========================================
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response cadastrarUsuario(Usuario novoUsuario) {
+        try {
+            // Antes de salvar no banco, transformamos a senha em HASH usando BCrypt
+            String senhaHash = BCrypt.hashpw(novoUsuario.getSenha(), BCrypt.gensalt());
+            novoUsuario.setSenha(senhaHash);
+            
+            usuarioDAO.salvar(novoUsuario);
+            return Response.status(Response.Status.CREATED)
+                           .entity("{\"mensagem\": \"Usuário cadastrado com sucesso!\"}").build();
+        } catch (Exception e) {
+            return Response.serverError().entity("{\"erro\": \"Erro ao cadastrar usuário.\"}").build();
+        }
     }
 
-    private void confirmarAlterar(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        objUsuario.setId_usuario(Integer.valueOf(id_usuario));
-        objUsuario.setNome(nome);
-        objUsuario.setSenha(senha);
-        objUsuario.setEmail(email);
-        objUsuario.setEndereco(endereco);
-        objUsuario.setCpf(cpf);
-        
-        if (data_cadastro != null && !data_cadastro.isEmpty())
-            objUsuario.setData_cadastro(Date.valueOf(data_cadastro));
-        if (dataNascimento != null && !dataNascimento.isEmpty())
-            objUsuario.setDataNascimento(Date.valueOf(dataNascimento));
-
-        objUsuarioDAO.alterar(objUsuario);
-        encaminharParaPagina(request, response);
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Secured 
+    public Response listarUsuarios() {
+        try {
+            List<Usuario> usuarios = usuarioDAO.buscarTodosUsuarios();
+            
+            for(Usuario u : usuarios) {
+                u.setSenha(null); 
+            }
+            
+            return Response.ok(usuarios).build();
+        } catch (Exception e) {
+            return Response.serverError().entity("{\"erro\": \"Erro ao buscar usuários.\"}").build();
+        }
     }
 
-    private void enviarExcluir(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setAttribute("id_usuario", id_usuario);
-        request.setAttribute("nome", nome);
-        request.setAttribute("senha", senha);
-        request.setAttribute("email", email);
-        request.setAttribute("endereco", endereco);
-        request.setAttribute("cpf", cpf);
-        request.setAttribute("data_cadastro", data_cadastro);
-        request.setAttribute("dataNascimento", dataNascimento);
-        
-        request.setAttribute("opcao", "confirmarExcluir");
-        request.setAttribute("mensagem", "Confirme os dados para excluir");
-        encaminharParaPagina(request, response);
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Secured 
+    public Response buscarPorId(@PathParam("id") int id) {
+        try {
+            Usuario usuario = usuarioDAO.buscarUsuarioPorId(id);
+            if (usuario != null) {
+                usuario.setSenha(null);
+                return Response.ok(usuario).build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"erro\": \"Usuário não encontrado.\"}").build();
+            }
+        } catch (Exception e) {
+            return Response.serverError().entity("{\"erro\": \"Erro ao buscar usuário.\"}").build();
+        }
     }
 
-    private void confirmarExcluir(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        objUsuario.setId_usuario(Integer.valueOf(id_usuario));
-        objUsuarioDAO.excluir(objUsuario);
-        encaminharParaPagina(request, response);
+    @PUT
+    @Path("/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Secured 
+    public Response atualizarUsuario(@PathParam("id") int id, Usuario usuarioAtualizado) {
+        try {
+            Usuario usuarioExistente = usuarioDAO.buscarUsuarioPorId(id);
+            if (usuarioExistente == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"erro\": \"Usuário não encontrado para edição.\"}").build();
+            }
+            
+            // Se o usuário mandou uma senha nova, gera o hash dela. 
+            // Caso contrário, mantém a senha hash antiga.
+            if(usuarioAtualizado.getSenha() != null && !usuarioAtualizado.getSenha().isEmpty()) {
+                String senhaHash = BCrypt.hashpw(usuarioAtualizado.getSenha(), BCrypt.gensalt());
+                usuarioAtualizado.setSenha(senhaHash);
+            } else {
+                usuarioAtualizado.setSenha(usuarioExistente.getSenha());
+            }
+            
+            usuarioAtualizado.setId_usuario(id);
+            usuarioDAO.alterar(usuarioAtualizado);
+            
+            return Response.ok("{\"mensagem\": \"Usuário atualizado com sucesso!\"}").build();
+        } catch (Exception e) {
+            return Response.serverError().entity("{\"erro\": \"Erro ao atualizar usuário.\"}").build();
+        }
     }
 
-    private void cancelar(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setAttribute("id_usuario", "0");
-        request.setAttribute("nome", "");
-        request.setAttribute("senha", "");
-        request.setAttribute("email", "");
-        request.setAttribute("endereco", "");
-        request.setAttribute("cpf", "");
-        request.setAttribute("data_cadastro", "");
-        request.setAttribute("dataNascimento", "");
-        request.setAttribute("opcao", "cadastrar");
-        encaminharParaPagina(request, response);
-    }
-
-    private void encaminharParaPagina(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<Usuario> usuarios = objUsuarioDAO.buscarTodosUsuarios();
-        request.setAttribute("usuarios", usuarios);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/CadastroUsuario.jsp");
-        dispatcher.forward(request, response);
+    @DELETE
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Secured 
+    public Response deletarUsuario(@PathParam("id") int id) {
+        try {
+            Usuario usuario = usuarioDAO.buscarUsuarioPorId(id);
+            if (usuario != null) {
+                usuarioDAO.excluir(usuario); // Ajustado para passar o objeto inteiro, conforme seu DAO
+                return Response.ok("{\"mensagem\": \"Usuário excluído com sucesso!\"}").build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"erro\": \"Usuário não encontrado para exclusão.\"}").build();
+            }
+        } catch (Exception e) {
+            return Response.serverError().entity("{\"erro\": \"Erro ao excluir usuário.\"}").build();
+        }
     }
 }

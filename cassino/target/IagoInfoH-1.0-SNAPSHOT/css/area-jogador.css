@@ -1,0 +1,117 @@
+/* ---------- Botões ---------- */
+.btn-card {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 11px 26px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ffd700, #ffb300);
+    color: #1a1a1a !important;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: .3px;
+    text-decoration: none !important;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, .35);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.btn-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(255, 193, 7, .5);
+    filter: brightness(1.06);
+}
+.btn-card:active { transform: translateY(0); }
+.btn-card.verde {
+    background: linear-gradient(135deg, #2ecc71, #1e9e55);
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(46, 204, 113, .35);
+}
+.btn-card.contorno {
+    background: transparent;
+    border: 2px solid gold;
+    color: gold !important;
+    box-shadow: none;
+}
+.btn-card.bloqueado {
+    background: #444;
+    color: #ddd !important;
+    box-shadow: none;
+}
+.btn-card.bloqueado:hover { filter: none; transform: none; background: #555; }
+
+/* ---------- Faixa de sessão ---------- */
+.aviso-sessao { text-align: center; padding: 12px 20px; font-weight: bold; }
+.aviso-sessao.on  { background: #1e7e34; color: #fff; }
+.aviso-sessao.off { background: #b8860b; color: #fff; }
+.aviso-sessao a   { color: #fff; text-decoration: underline; }
+
+/* ---------- Cards da home ---------- */
+.area-jogador, .como-funciona, .promocoes { padding: 40px 20px; }
+.grade { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+.card-area {
+    position: relative;
+    width: 230px;
+    padding: 24px 18px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    text-align: center;
+    transition: transform .2s ease, border-color .2s ease;
+}
+.card-area:hover { transform: translateY(-4px); border-color: gold; }
+.card-area .icone { font-size: 38px; }
+.card-area h2 { margin: 10px 0 6px; }
+.card-area p  { font-size: 14px; opacity: .85; min-height: 40px; }
+.card-area.bloqueado { opacity: .8; }
+.card-area .cadeado { position: absolute; top: 10px; right: 12px; font-size: 18px; }
+.passo .numero {
+    width: 46px; height: 46px; margin: 0 auto 10px;
+    border-radius: 50%; background: gold; color: #000;
+    font-weight: bold; font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+}
+.promo-tag {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    background: gold; color: #000; font-size: 12px; font-weight: bold;
+}
+
+/* ---------- Páginas internas (transações, conquistas) ---------- */
+.area-wrap { max-width: 1000px; margin: 40px auto; padding: 0 20px; color: #fff; }
+.area-wrap h1 { text-align: center; margin-bottom: 8px; }
+.area-sub { text-align: center; opacity: .75; margin-bottom: 28px; }
+
+.resumo { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+.resumo .item {
+    flex: 1 1 180px; background: #2b2b2b; border-radius: 16px; padding: 18px;
+    text-align: center; border: 1px solid rgba(255, 255, 255, .08);
+}
+.resumo .valor { font-size: 26px; font-weight: bold; color: gold; }
+.resumo .valor.verde { color: #2ecc71; }
+.resumo .rotulo { font-size: 13px; opacity: .8; }
+
+.tabela-wrap { background: #2b2b2b; border-radius: 16px; padding: 10px 20px; overflow-x: auto; }
+.tabela { width: 100%; border-collapse: collapse; color: #fff; }
+.tabela th, .tabela td { padding: 14px 10px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, .1); }
+.tabela th { color: gold; font-size: 13px; text-transform: uppercase; letter-spacing: .5px; }
+.tabela tr:last-child td { border-bottom: 0; }
+.tag { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+.tag.deposito { background: #1e7e34; }
+.tag.saque    { background: #b8860b; }
+.tag.outro    { background: #555; }
+
+.vazio { text-align: center; opacity: .75; padding: 30px; }
+
+.barra { height: 12px; background: #1f1f1f; border-radius: 999px; overflow: hidden; margin: 6px 0 26px; }
+.barra > div { height: 100%; background: linear-gradient(90deg, #ffd700, #ffb300); }
+
+.lista-conquistas { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+.conq {
+    width: 220px; background: #2b2b2b; border-radius: 16px; padding: 20px; text-align: center;
+    border: 1px solid rgba(255, 215, 0, .5);
+}
+.conq .medalha { font-size: 44px; }
+.conq h3 { margin: 8px 0 4px; }
+.conq small { opacity: .8; }
+.conq.trancada { opacity: .5; border-color: rgba(255, 255, 255, .15); filter: grayscale(1); }
+
+.msg-erro { background: #a71d2a; color: #fff; padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; }

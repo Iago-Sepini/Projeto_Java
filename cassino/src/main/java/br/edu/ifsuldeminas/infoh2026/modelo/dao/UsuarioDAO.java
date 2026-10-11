@@ -71,4 +71,9 @@ public class UsuarioDAO extends GenericoDAO<Usuario> {
         String sql = "SELECT * FROM USUARIO WHERE ID_USUARIO = ?";
         return buscarPorId(sql, new UsuarioRowMapper(), id);
     }
+    
+    public Usuario buscarPorEmail(String email) {
+        String sql = "SELECT * FROM USUARIO WHERE EMAIL = ?";
+        return buscarPorId(sql, new UsuarioRowMapper(), email);
+    }
 }

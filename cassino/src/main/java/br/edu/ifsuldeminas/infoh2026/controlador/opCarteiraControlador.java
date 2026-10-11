@@ -22,7 +22,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -38,9 +41,6 @@ public class opCarteiraControlador extends HttpServlet {
     private TransacaoDAO transacaoDao;
     private UsuarioDAO usuarioDao;
 
-    private Saque objSaque;
-    private Transacao objTransacao;
-
     @Override
     public void init() throws ServletException {
 
@@ -50,15 +50,27 @@ public class opCarteiraControlador extends HttpServlet {
         transacaoDao = new TransacaoDAO();
         usuarioDao = new UsuarioDAO();
 
-        objSaque = new Saque();
-        objTransacao = new Transacao();
+    }
 
+    // Formulários (perfil) usam POST; links antigos continuam usando GET
+    @Override
+    protected void doPost(HttpServletRequest request,
+            HttpServletResponse response)
+            throws ServletException, IOException {
+
+        doGet(request, response);
     }
 
     @Override
     protected void doGet(HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
+
+        // Vindo do perfil: exige usuário logado na sessão
+        if (veioDoPerfil(request) && usuarioDaSessao(request) == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp?msg=login");
+            return;
+        }
 
         String opcao = request.getParameter("opcao");
 
@@ -85,123 +97,152 @@ public class opCarteiraControlador extends HttpServlet {
         }
 
     }
-///////////////////////////////////////////// SAQUE /////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////// AUXILIARES ///////////////////////////////////////////////////////////////
+    private boolean veioDoPerfil(HttpServletRequest request) {
+        return "perfil".equals(request.getParameter("origem"));
+    }
+
+    private Usuario usuarioDaSessao(HttpServletRequest request) {
+        return (Usuario) request.getSession().getAttribute("usuarioLogado");
+    }
+
+    // No perfil o usuário é SEMPRE o da sessão (ignora o parâmetro, que poderia ser adulterado)
+    private Integer resolverIdUsuario(HttpServletRequest request) {
+        if (veioDoPerfil(request)) {
+            return usuarioDaSessao(request).getId_usuario();
+        }
+        return Integer.valueOf(request.getParameter("usuario"));
+    }
+
+    // Se a data não vier no formulário, usa a data de hoje
+    private Date resolverData(HttpServletRequest request) {
+        String d = request.getParameter("data");
+        if (d == null || d.isEmpty()) {
+            return Date.valueOf(LocalDate.now());
+        }
+        return Date.valueOf(d);
+    }
+
+    // Do perfil: volta para o perfil com ?ok= / ?erro=. Das outras telas: comportamento antigo.
+    private void finalizar(HttpServletRequest request, HttpServletResponse response,
+            String mensagem, boolean sucesso)
+            throws ServletException, IOException {
+
+        if (veioDoPerfil(request)) {
+            String chave = sucesso ? "ok" : "erro";
+            response.sendRedirect(request.getContextPath() + "/PerfilControlador?" + chave + "="
+                    + URLEncoder.encode(mensagem, StandardCharsets.UTF_8));
+            return;
+        }
+
+        request.setAttribute("mensagem", mensagem);
+        abrirPagina(request, response);
+    }
+
+    ///////////////////////////////////////////// SAQUE /////////////////////////////////////////////////////////////////////////
     private void realizarSaque(HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
 
         try {
 
-            Integer idUsuario
-                    = Integer.valueOf(request.getParameter("usuario"));
+            Integer idUsuario = resolverIdUsuario(request);
+            Double valor = Double.valueOf(request.getParameter("valor"));
+            Date data = resolverData(request);
 
-            Double valor
-                    = Double.valueOf(request.getParameter("valor"));
-
-            Date data
-                    = Date.valueOf(request.getParameter("data"));
-
-            Usuario usuario
-                    = usuarioDao.buscarUsuarioPorId(idUsuario);
-
-            if (usuario == null) {
-
-                request.setAttribute("mensagem",
-                        "Usuário não encontrado.");
-
-                abrirPagina(request, response);
+            if (valor <= 0) {
+                finalizar(request, response, "Informe um valor maior que zero.", false);
                 return;
-
             }
 
-            Carteira carteira
-                    = carteiraDao.buscarCarteiraPorUsuario(idUsuario);
+            Usuario usuario = usuarioDao.buscarUsuarioPorId(idUsuario);
+
+            if (usuario == null) {
+                finalizar(request, response, "Usuário não encontrado.", false);
+                return;
+            }
+
+            Carteira carteira = carteiraDao.buscarCarteiraPorUsuario(idUsuario);
 
             if (carteira == null) {
-
-                request.setAttribute("mensagem",
-                        "Carteira não encontrada.");
-
-                abrirPagina(request, response);
+                finalizar(request, response, "Carteira não encontrada.", false);
                 return;
-
             }
 
             if (carteira.getSaldo() < valor) {
-
-                request.setAttribute("mensagem",
-                        "Saldo insuficiente.");
-
-                abrirPagina(request, response);
+                finalizar(request, response, "Saldo insuficiente.", false);
                 return;
-
             }
 
             //==============================
             // SALVA O SAQUE
             //==============================
-            objSaque = new Saque();
-
+            Saque objSaque = new Saque();
             objSaque.setData(data);
             objSaque.setValor_total(valor);
             objSaque.setUsuario(usuario);
-
             saqueDao.salvar(objSaque);
 
             //==============================
             // ATUALIZA A CARTEIRA
             //==============================
             carteira.setSaldo(carteira.getSaldo() - valor);
-
             carteiraDao.alterar(carteira);
 
             //==============================
             // REGISTRA A TRANSAÇÃO
             //==============================
-            objTransacao = new Transacao();
-
+            Transacao objTransacao = new Transacao();
             objTransacao.setValor(valor);
             objTransacao.setTipo("SAQUE");
             objTransacao.setData(data);
             objTransacao.setUsuario(usuario);
-
             transacaoDao.salvar(objTransacao);
 
-            request.setAttribute("mensagem",
-                    "Saque realizado com sucesso!");
+            finalizar(request, response, "Saque realizado com sucesso!", true);
 
         } catch (Exception e) {
-
-            request.setAttribute("mensagem",
-                    "Erro ao realizar saque: "
-                    + e.getMessage());
-
+            finalizar(request, response, "Erro ao realizar saque: " + e.getMessage(), false);
         }
 
-        abrirPagina(request, response);
-
     }
-///////////////////////////////////////////// DEPÓSITO /////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////// DEPÓSITO /////////////////////////////////////////////////////////////////////////
     private void realizarDeposito(HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
 
         try {
-            Integer idUsuario = Integer.valueOf(request.getParameter("usuario"));
+
+            Integer idUsuario = resolverIdUsuario(request);
             Double valor = Double.valueOf(request.getParameter("valor"));
-            Date data = Date.valueOf(request.getParameter("data"));
+            Date data = resolverData(request);
+
+            if (valor <= 0) {
+                finalizar(request, response, "Informe um valor maior que zero.", false);
+                return;
+            }
 
             Usuario usuario = usuarioDao.buscarUsuarioPorId(idUsuario);
             if (usuario == null) {
-                request.setAttribute("mensagem", "Usuario nao encontrado.");
-                abrirPagina(request, response);
+                finalizar(request, response, "Usuário não encontrado.", false);
                 return;
             }
 
             Carteira carteira = carteiraDao.buscarCarteiraPorUsuario(idUsuario);
+
+            // Primeiro depósito: cria a carteira do usuário com saldo zero
             if (carteira == null) {
-                request.setAttribute("mensagem", "Carteira nao encontrada.");
-                abrirPagina(request, response);
+                Carteira nova = new Carteira();
+                nova.setSaldo(0.0);
+                nova.setUsuario(usuario);
+                carteiraDao.salvar(nova);
+                carteira = carteiraDao.buscarCarteiraPorUsuario(idUsuario);
+            }
+
+            if (carteira == null) {
+                finalizar(request, response, "Carteira não encontrada.", false);
                 return;
             }
 
@@ -210,7 +251,7 @@ public class opCarteiraControlador extends HttpServlet {
             //==============================
             Deposito objDeposito = new Deposito();
             objDeposito.setData(data);
-            objDeposito.setValor_total(valor); // Ajuste de acordo com o set da entidade Deposito
+            objDeposito.setValor_total(valor);
             objDeposito.setUsuario(usuario);
             depositoDao.salvar(objDeposito);
 
@@ -223,20 +264,18 @@ public class opCarteiraControlador extends HttpServlet {
             //==============================
             // REGISTRA A TRANSAÇÃO
             //==============================
-            objTransacao = new Transacao();
+            Transacao objTransacao = new Transacao();
             objTransacao.setValor(valor);
             objTransacao.setTipo("DEPOSITO");
             objTransacao.setData(data);
             objTransacao.setUsuario(usuario);
             transacaoDao.salvar(objTransacao);
 
-            request.setAttribute("mensagem", "Deposito realizado com sucesso!");
+            finalizar(request, response, "Depósito realizado com sucesso!", true);
 
         } catch (Exception e) {
-            request.setAttribute("mensagem", "Erro ao realizar deposito: " + e.getMessage());
+            finalizar(request, response, "Erro ao realizar depósito: " + e.getMessage(), false);
         }
-
-        abrirPagina(request, response);
     }
 
     private void abrirPagina(HttpServletRequest request,

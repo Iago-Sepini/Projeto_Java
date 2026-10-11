@@ -4,6 +4,7 @@
 # Log file
 *.env
 *.log
+*cassino/src/main/resources/email.properties
 
 # BlueJ files
 *.ctxt
